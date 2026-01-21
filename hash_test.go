@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/azerum/partition/lib"
 	. "github.com/onsi/gomega"
@@ -61,23 +62,27 @@ func hashAndSave(partition *lib.Partition) {
 }
 
 func addFileE(partition *lib.Partition) {
-	if err := os.WriteFile(filepath.Join(partition.DirPath, "e"), ([]byte)("E"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(partition.AbsoluteDirOsPath, "e"), ([]byte)("E"), 0o600); err != nil {
 		panic(err)
 	}
 }
 
 func removeFileBAndDirectoryC(partition *lib.Partition) {
-	if err := os.Remove(filepath.Join(partition.DirPath, "b")); err != nil {
+	if err := os.Remove(filepath.Join(partition.AbsoluteDirOsPath, "b")); err != nil {
 		panic(err)
 	}
 
-	if err := os.RemoveAll(filepath.Join(partition.DirPath, "c")); err != nil {
+	if err := os.RemoveAll(filepath.Join(partition.AbsoluteDirOsPath, "c")); err != nil {
 		panic(err)
 	}
 }
 
 func modifyFileA(partition *lib.Partition) {
-	if err := os.WriteFile(filepath.Join(partition.DirPath, "a"), ([]byte)("A2"), 0o600); err != nil {
+	// Wait at least one second so mtime will be different even if
+	// this FS has 1s resolution
+	time.Sleep(time.Second)
+
+	if err := os.WriteFile(filepath.Join(partition.AbsoluteDirOsPath, "a"), ([]byte)("A2"), 0o600); err != nil {
 		panic(err)
 	}
 }
@@ -94,26 +99,26 @@ func Test_creates_entire_manifest_when_run_for_the_first_time(t *testing.T) {
 
 	g.Expect(changes).To(HaveExactElements(
 		SatisfyAll(
-			BeAssignableToTypeOf(&lib.FileAdded{}),
+			BeAssignableToTypeOf(lib.FileAdded{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"Path": Equal("a"),
+				"ManifestPath": Equal("a"),
 			}),
 		),
 
 		SatisfyAll(
-			BeAssignableToTypeOf(&lib.FileAdded{}),
+			BeAssignableToTypeOf(lib.FileAdded{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"Path": Equal("b"),
+				"ManifestPath": Equal("b"),
 			}),
 		),
 
 		SatisfyAll(
-			BeAssignableToTypeOf(&lib.FileAdded{}),
+			BeAssignableToTypeOf(lib.FileAdded{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"Path": Equal("c/d"),
+				"ManifestPath": Equal("c/d"),
 			}),
 		),
 	))
@@ -134,10 +139,10 @@ func Test_detects_added_files(t *testing.T) {
 
 	g.Expect(changes).To(HaveExactElements(
 		SatisfyAll(
-			BeAssignableToTypeOf(&lib.FileAdded{}),
+			BeAssignableToTypeOf(lib.FileAdded{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"Path": Equal("e"),
+				"ManifestPath": Equal("e"),
 			}),
 		),
 	))
@@ -158,18 +163,18 @@ func Test_detects_removed_files(t *testing.T) {
 
 	g.Expect(changes).To(HaveExactElements(
 		SatisfyAll(
-			BeAssignableToTypeOf(&lib.FileRemoved{}),
+			BeAssignableToTypeOf(lib.FileRemoved{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"Path": Equal("b"),
+				"ManifestPath": Equal("b"),
 			}),
 		),
 
 		SatisfyAll(
-			BeAssignableToTypeOf(&lib.FileRemoved{}),
+			BeAssignableToTypeOf(lib.FileRemoved{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"Path": Equal("c/d"),
+				"ManifestPath": Equal("c/d"),
 			}),
 		),
 	))
@@ -190,10 +195,10 @@ func Test_detects_modified_files(t *testing.T) {
 
 	g.Expect(changes).To(HaveExactElements(
 		SatisfyAll(
-			BeAssignableToTypeOf(&lib.FileModified{}),
+			BeAssignableToTypeOf(lib.FileModified{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"Path": Equal("a"),
+				"ManifestPath": Equal("a"),
 			}),
 		),
 	))

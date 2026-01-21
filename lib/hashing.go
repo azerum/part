@@ -12,8 +12,8 @@ func HashString(s string) string {
 	return fmt.Sprintf("%x", bytes)
 }
 
-func HashFile(fullPath string) (string, error) {
-	file, err := os.Open(fullPath)
+func HashFile(absoluteOsPath string) (string, error) {
+	file, err := os.Open(absoluteOsPath)
 
 	if err != nil {
 		return "", err

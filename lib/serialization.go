@@ -24,8 +24,8 @@ func DeserializePartition(
 	}
 
 	p := Partition{
-		DirPath:  dirPath,
-		manifest: manifest,
+		AbsoluteDirOsPath: dirPath,
+		manifest:          manifest,
 	}
 
 	return &p, nil

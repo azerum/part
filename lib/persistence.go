@@ -20,8 +20,8 @@ func LoadPartition(dirPath string) (*Partition, error) {
 		}
 
 		p := Partition{
-			DirPath:  dirPath,
-			manifest: nil,
+			AbsoluteDirOsPath: dirPath,
+			manifest:          nil,
 		}
 
 		return &p, nil
@@ -37,8 +37,8 @@ func (partition *Partition) Save() error {
 		return err
 	}
 
-	manifestPath := filepath.Join(partition.DirPath, manifestFileName)
-	manifestTmpPath := filepath.Join(partition.DirPath, manifestTmpFileName)
+	manifestPath := filepath.Join(partition.AbsoluteDirOsPath, manifestFileName)
+	manifestTmpPath := filepath.Join(partition.AbsoluteDirOsPath, manifestTmpFileName)
 
 	return overwrite(manifestPath, manifestTmpPath, manifestBytes)
 }
