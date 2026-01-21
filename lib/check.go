@@ -31,7 +31,7 @@ func (m HashDoesNotMatch) isManifestMismatch() {}
 
 func (partition *Partition) Check() ([]ManifestMismatch, error) {
 	if partition.manifest == nil {
-		return nil, errors.New("Partition has no manifest!")
+		return nil, errors.New("partition has no manifest")
 	}
 
 	mismatches := make([]ManifestMismatch, 0)
