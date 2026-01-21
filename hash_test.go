@@ -33,7 +33,7 @@ func setupTestPartition(t *testing.T) *lib.Partition {
 		panic(err)
 	}
 
-	if err := os.WriteFile(filepath.Join(dirPath, "d"), ([]byte)("D"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dirPath, "c", "d"), ([]byte)("D"), 0o600); err != nil {
 		panic(err)
 	}
 
