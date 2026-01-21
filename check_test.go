@@ -8,14 +8,18 @@ import (
 	gs "github.com/onsi/gomega/gstruct"
 )
 
-func Test_Check_detects_unhashed_file(t *testing.T) {
+func Test_Check_detects_added_but_not_hashed_files(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
 	addFileE(p)
-	mismatches := p.Check()
+	mismatches, err := p.Check()
+
+	if err != nil {
+		panic(err)
+	}
 
 	g.Expect(mismatches).To(HaveExactElements(
 		SatisfyAll(
@@ -28,14 +32,18 @@ func Test_Check_detects_unhashed_file(t *testing.T) {
 	))
 }
 
-func Test_Check_detects_deleted_file(t *testing.T) {
+func Test_Check_detects_missing_files(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
 	removeFileBAndDirectoryC(p)
-	mismatches := p.Check()
+	mismatches, err := p.Check()
+
+	if err != nil {
+		panic(err)
+	}
 
 	g.Expect(mismatches).To(HaveExactElements(
 		SatisfyAll(
@@ -56,14 +64,18 @@ func Test_Check_detects_deleted_file(t *testing.T) {
 	))
 }
 
-func Test_Check_detects_changed_file(t *testing.T) {
+func Test_Check_detects_when_file_contents_change_after_hashing(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
 	modifyFileA(p)
-	mismatches := p.Check()
+	mismatches, err := p.Check()
+
+	if err != nil {
+		panic(err)
+	}
 
 	g.Expect(mismatches).To(HaveExactElements(
 		SatisfyAll(
@@ -76,14 +88,18 @@ func Test_Check_detects_changed_file(t *testing.T) {
 	))
 }
 
-func Test_Check_ignores_mtime_only_changes(t *testing.T) {
+func Test_Check_does_not_consider_file_modified_if_it_changes_mtime_but_not_contents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
 	modifyFileAMtime(p)
-	mismatches := p.Check()
+	mismatches, err := p.Check()
+
+	if err != nil {
+		panic(err)
+	}
 
 	g.Expect(mismatches).To(BeEmpty())
 }

@@ -69,7 +69,7 @@ func Test_Hash_detects_added_files(t *testing.T) {
 	))
 }
 
-func Test_Hash_detects_removed_files(t *testing.T) {
+func Test_Hash_detects_deleted_files(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	p := setupTestPartition(t)
@@ -84,7 +84,7 @@ func Test_Hash_detects_removed_files(t *testing.T) {
 
 	g.Expect(changes).To(HaveExactElements(
 		SatisfyAll(
-			BeAssignableToTypeOf(lib.FileRemoved{}),
+			BeAssignableToTypeOf(lib.FileDeleted{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
 				"ManifestPath": Equal("b"),
@@ -92,7 +92,7 @@ func Test_Hash_detects_removed_files(t *testing.T) {
 		),
 
 		SatisfyAll(
-			BeAssignableToTypeOf(lib.FileRemoved{}),
+			BeAssignableToTypeOf(lib.FileDeleted{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
 				"ManifestPath": Equal("c/d"),

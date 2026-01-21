@@ -56,16 +56,16 @@ func (c FileModified) apply(manifest *manifest) error {
 	return nil
 }
 
-type FileRemoved struct {
+type FileDeleted struct {
 	ManifestPath string
 }
 
-func (c FileRemoved) apply(manifest *manifest) error {
+func (c FileDeleted) apply(manifest *manifest) error {
 	_, exists := manifest.Files[c.ManifestPath]
 
 	if !exists {
 		return fmt.Errorf(
-			"cannot apply FileRemoved: file %s does not exist in manifest",
+			"cannot apply FileDeleted: file %s does not exist in manifest",
 			c.ManifestPath,
 		)
 	}
@@ -96,7 +96,7 @@ func (c SpuriousMtimeChange) apply(manifest *manifest) error {
 // Passed changes are expected to make sense, i.e. to hold invariants:
 //
 // - FileAdded never asks to add already added file
-// - FileModified & FileRemoved never refer to not-added file
+// - FileModified & FileDeleted never refer to not-added file
 //
 // **panics** if invariants are violated
 func (partition *Partition) ApplyChanges(changes []ManifestChange) {
@@ -215,12 +215,12 @@ func (partition *Partition) Hash() ([]ManifestChange, error) {
 	}
 
 	// Files that were not seen in the partition but are in the manifest
-	// are the files that were removed
+	// are the files that were deleted
 	for p := range partition.manifest.Files {
 		_, seen := seenInPartition[p]
 
 		if !seen {
-			changes = append(changes, FileRemoved{ManifestPath: p})
+			changes = append(changes, FileDeleted{ManifestPath: p})
 		}
 	}
 
