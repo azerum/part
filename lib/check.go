@@ -7,19 +7,19 @@ type ManifestMismatch interface {
 }
 
 type FileMissing struct {
-	Path string
+	ManifestPath string
 }
 
 func (m FileMissing) isManifestMismatch() {}
 
 type FileNotHashed struct {
-	Path string
+	ManifestPath string
 }
 
 func (m FileNotHashed) isManifestMismatch() {}
 
 type HashDoesNotMatch struct {
-	Path         string
+	ManifestPath string
 	ActualHash   string
 	ExpectedHash string
 }
