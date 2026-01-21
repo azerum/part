@@ -42,6 +42,14 @@ func Test_Hash_creates_entire_manifest_when_run_for_the_first_time(t *testing.T)
 				"ManifestPath": Equal("c/d"),
 			}),
 		),
+
+		SatisfyAll(
+			BeAssignableToTypeOf(lib.FileAdded{}),
+
+			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
+				"ManifestPath": Equal("e"),
+			}),
+		),
 	))
 }
 
@@ -51,7 +59,7 @@ func Test_Hash_detects_added_files(t *testing.T) {
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
-	addFileE(p)
+	addFileF(p)
 	changes, err := p.Hash()
 
 	if err != nil {
@@ -63,7 +71,7 @@ func Test_Hash_detects_added_files(t *testing.T) {
 			BeAssignableToTypeOf(lib.FileAdded{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"ManifestPath": Equal("e"),
+				"ManifestPath": Equal("f"),
 			}),
 		),
 	))
@@ -131,9 +139,10 @@ func Test_Hash_if_called_right_after_changes_are_applied_and_saved_returns_no_ch
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
-	addFileE(p)
+	addFileF(p)
 	removeFileBAndDirectoryC(p)
 	modifyFileA(p)
+	modifyFileEMtime(p)
 
 	changes, err := p.Hash()
 

@@ -14,7 +14,7 @@ func Test_Check_detects_added_but_not_hashed_files(t *testing.T) {
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
-	addFileE(p)
+	addFileF(p)
 	mismatches, err := p.Check()
 
 	if err != nil {
@@ -26,7 +26,7 @@ func Test_Check_detects_added_but_not_hashed_files(t *testing.T) {
 			BeAssignableToTypeOf(lib.FileNotHashed{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
-				"ManifestPath": Equal("e"),
+				"ManifestPath": Equal("f"),
 			}),
 		),
 	))
@@ -94,7 +94,7 @@ func Test_Check_does_not_consider_file_modified_if_it_changes_mtime_but_not_cont
 	p := setupTestPartition(t)
 	hashAndSave(p)
 
-	modifyFileAMtime(p)
+	modifyFileEMtime(p)
 	mismatches, err := p.Check()
 
 	if err != nil {

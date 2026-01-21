@@ -19,6 +19,7 @@ func setupTestPartition(t *testing.T) *lib.Partition {
 	//  b (contains B)
 	//  c/
 	//    d (contains D)
+	//  e (contains E)
 
 	if err := os.WriteFile(filepath.Join(dirPath, "a"), ([]byte)("A"), 0o600); err != nil {
 		panic(err)
@@ -33,6 +34,10 @@ func setupTestPartition(t *testing.T) *lib.Partition {
 	}
 
 	if err := os.WriteFile(filepath.Join(dirPath, "c", "d"), ([]byte)("D"), 0o600); err != nil {
+		panic(err)
+	}
+
+	if err := os.WriteFile(filepath.Join(dirPath, "e"), ([]byte)("E"), 0o600); err != nil {
 		panic(err)
 	}
 
@@ -59,8 +64,8 @@ func hashAndSave(partition *lib.Partition) {
 	}
 }
 
-func addFileE(partition *lib.Partition) {
-	if err := os.WriteFile(filepath.Join(partition.AbsoluteDirOsPath, "e"), ([]byte)("E"), 0o600); err != nil {
+func addFileF(partition *lib.Partition) {
+	if err := os.WriteFile(filepath.Join(partition.AbsoluteDirOsPath, "f"), ([]byte)("F"), 0o600); err != nil {
 		panic(err)
 	}
 }
@@ -85,8 +90,8 @@ func modifyFileA(partition *lib.Partition) {
 	}
 }
 
-func modifyFileAMtime(partition *lib.Partition) {
-	path := filepath.Join(partition.AbsoluteDirOsPath, "a")
+func modifyFileEMtime(partition *lib.Partition) {
+	path := filepath.Join(partition.AbsoluteDirOsPath, "e")
 	t := time.Now().Add(10 * time.Second)
 
 	if err := os.Chtimes(path, t, t); err != nil {
