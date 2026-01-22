@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/azerum/partition/lib"
@@ -15,7 +16,7 @@ func Test_Check_detects_added_but_not_hashed_files(t *testing.T) {
 	hashAndSave(p)
 
 	addFileF(p)
-	mismatches, err := p.Check()
+	mismatches, err := p.Check(context.Background())
 
 	if err != nil {
 		panic(err)
@@ -39,7 +40,7 @@ func Test_Check_detects_missing_files(t *testing.T) {
 	hashAndSave(p)
 
 	removeFileBAndDirectoryC(p)
-	mismatches, err := p.Check()
+	mismatches, err := p.Check(context.Background())
 
 	if err != nil {
 		panic(err)
@@ -71,7 +72,7 @@ func Test_Check_detects_when_file_contents_change_after_hashing(t *testing.T) {
 	hashAndSave(p)
 
 	modifyFileA(p)
-	mismatches, err := p.Check()
+	mismatches, err := p.Check(context.Background())
 
 	if err != nil {
 		panic(err)
@@ -95,7 +96,7 @@ func Test_Check_does_not_consider_file_modified_if_it_changes_mtime_but_not_cont
 	hashAndSave(p)
 
 	modifyFileEMtime(p)
-	mismatches, err := p.Check()
+	mismatches, err := p.Check(context.Background())
 
 	if err != nil {
 		panic(err)

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/azerum/partition/lib"
 )
@@ -15,16 +17,6 @@ func main() {
 	subcommand := os.Args[1]
 
 	switch subcommand {
-	case "check":
-		partitionDirs := os.Args[2:]
-		err := checkCommand(partitionDirs)
-
-		if err != nil {
-			panic(err)
-		}
-
-		return
-
 	case "hash":
 		if len(os.Args) != 3 {
 			printUsageAndExit("hash requires exactly 1 arg")
@@ -37,7 +29,17 @@ func main() {
 			panic(err)
 		}
 
-		return
+	case "check":
+		partitionDirs := os.Args[2:]
+		exitCode, err := checkCommand(partitionDirs)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if exitCode != 0 {
+			os.Exit(exitCode)
+		}
 
 	default:
 		printUsageAndExit(fmt.Sprintf("Unknown subcommand %s", subcommand))
@@ -63,7 +65,7 @@ func hashCommand(partitionDir string) error {
 		return nil
 	}
 
-	changes, err := partition.Hash()
+	changes, err := partition.Hash(context.Background())
 
 	if err != nil {
 		return err
@@ -94,6 +96,83 @@ func sprintManifestChange(change lib.ManifestChange) string {
 	}
 }
 
-func checkCommand(partitionDirs []string) error {
-	return nil
+func checkCommand(partitionDirs []string) (int, error) {
+	input := fanOutPartitionDirs(partitionDirs)
+	ctx, cancel := context.WithCancelCause(context.Background())
+
+	lines := mapConcurrently(input, doCheck, runtime.NumCPU(), ctx, cancel)
+	hadAtLeastOneMismatch := false
+
+	for {
+		select {
+		case l, ok := <-lines:
+			if !ok {
+				if hadAtLeastOneMismatch {
+					return 1, nil
+				}
+
+				return 0, nil
+			}
+
+			hadAtLeastOneMismatch = true
+			fmt.Println(l)
+
+		case <-ctx.Done():
+			return 1, ctx.Err()
+		}
+	}
+}
+
+func fanOutPartitionDirs(partitionDirs []string) <-chan string {
+	out := make(chan string)
+
+	go func() {
+		for _, dir := range partitionDirs {
+			out <- dir
+		}
+
+		close(out)
+	}()
+
+	return out
+}
+
+// Returns list of lines of mismatches to output to stdout
+func doCheck(partitionDir string, ctx context.Context) ([]string, error) {
+	partition, err := lib.LoadPartition(partitionDir)
+
+	if err != nil {
+		return nil, err
+	}
+
+	mismatches, err := partition.Check(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	lines := make([]string, 0)
+
+	for _, m := range mismatches {
+		l := sprintManifestMismatch(partitionDir, m)
+		lines = append(lines, l)
+	}
+
+	return lines, nil
+}
+
+func sprintManifestMismatch(partitionDir string, mismatch lib.ManifestMismatch) string {
+	switch c := mismatch.(type) {
+	case lib.FileNotHashed:
+		return fmt.Sprintf("?+ %s %s", partitionDir, c.ManifestPath)
+
+	case lib.FileMissing:
+		return fmt.Sprintf("?- %s %s", partitionDir, c.ManifestPath)
+
+	case lib.HashDoesNotMatch:
+		return fmt.Sprintf("?* %s %s actual=%s expected=%s", partitionDir, c.ManifestPath, c.ActualHash, c.ExpectedHash)
+
+	default:
+		panic(fmt.Sprintf("Unknown ManifestMismatch: %+v", mismatch))
+	}
 }

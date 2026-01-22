@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -116,7 +117,7 @@ func (partition *Partition) ApplyChanges(changes []ManifestChange) {
 	}
 }
 
-func (partition *Partition) Hash() ([]ManifestChange, error) {
+func (partition *Partition) Hash(ctx context.Context) ([]ManifestChange, error) {
 	changes := make([]ManifestChange, 0)
 	seenInPartition := make(map[string]struct{})
 
@@ -126,7 +127,7 @@ func (partition *Partition) Hash() ([]ManifestChange, error) {
 		}
 	}
 
-	err := partition.Walk(func(absoluteOsPath string, manifestPath string, entry fs.DirEntry) error {
+	walk := func(absoluteOsPath string, manifestPath string, entry fs.DirEntry) error {
 		seenInPartition[manifestPath] = struct{}{}
 
 		info, err := entry.Info()
@@ -208,7 +209,9 @@ func (partition *Partition) Hash() ([]ManifestChange, error) {
 		})
 
 		return nil
-	})
+	}
+
+	err := partition.Walk(walk, ctx)
 
 	if err != nil {
 		return nil, err

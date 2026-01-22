@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 )
@@ -29,7 +30,7 @@ type HashDoesNotMatch struct {
 
 func (m HashDoesNotMatch) isManifestMismatch() {}
 
-func (partition *Partition) Check() ([]ManifestMismatch, error) {
+func (partition *Partition) Check(ctx context.Context) ([]ManifestMismatch, error) {
 	if partition.manifest == nil {
 		return nil, errors.New("partition has no manifest")
 	}
@@ -37,7 +38,13 @@ func (partition *Partition) Check() ([]ManifestMismatch, error) {
 	mismatches := make([]ManifestMismatch, 0)
 	seenInPartition := make(map[string]struct{})
 
-	err := partition.Walk(func(absoluteOsPath string, manifestPath string, _entry fs.DirEntry) error {
+	walk := func(absoluteOsPath string, manifestPath string, _entry fs.DirEntry) error {
+		err := ctx.Err()
+
+		if err != nil {
+			return err
+		}
+
 		seenInPartition[manifestPath] = struct{}{}
 
 		manifestEntry := partition.manifest.Files[manifestPath]
@@ -62,7 +69,9 @@ func (partition *Partition) Check() ([]ManifestMismatch, error) {
 		}
 
 		return nil
-	})
+	}
+
+	err := partition.Walk(walk, ctx)
 
 	if err != nil {
 		return nil, err
