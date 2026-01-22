@@ -27,8 +27,8 @@ func (c FileAdded) apply(manifest *manifest) error {
 	}
 
 	manifest.Files[c.ManifestPath] = &fileEntry{
-		hash:  c.hash,
-		mtime: c.mtime,
+		Hash:  c.hash,
+		Mtime: c.mtime,
 	}
 
 	return nil
@@ -50,8 +50,8 @@ func (c FileModified) apply(manifest *manifest) error {
 		)
 	}
 
-	entry.hash = c.hash
-	entry.mtime = c.mtime
+	entry.Hash = c.hash
+	entry.Mtime = c.mtime
 
 	return nil
 }
@@ -89,7 +89,7 @@ func (c SpuriousMtimeChange) apply(manifest *manifest) error {
 		)
 	}
 
-	entry.mtime = c.mtime
+	entry.Mtime = c.mtime
 	return nil
 }
 
@@ -182,7 +182,7 @@ func (partition *Partition) Hash() ([]ManifestChange, error) {
 		// mtime in the manifest in such case, to avoid hashing this file
 		// next time
 
-		if manifestEntry.mtime == mtime {
+		if manifestEntry.Mtime == mtime {
 			return nil
 		}
 
@@ -192,7 +192,7 @@ func (partition *Partition) Hash() ([]ManifestChange, error) {
 			return err
 		}
 
-		if hash == manifestEntry.hash {
+		if hash == manifestEntry.Hash {
 			changes = append(changes, SpuriousMtimeChange{
 				ManifestPath: manifestPath,
 				mtime:        mtime,

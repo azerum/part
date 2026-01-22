@@ -53,11 +53,11 @@ func (partition *Partition) Check() ([]ManifestMismatch, error) {
 			return err
 		}
 
-		if hash != manifestEntry.hash {
+		if hash != manifestEntry.Hash {
 			mismatches = append(mismatches, HashDoesNotMatch{
 				ManifestPath: manifestPath,
 				ActualHash:   hash,
-				ExpectedHash: manifestEntry.hash,
+				ExpectedHash: manifestEntry.Hash,
 			})
 		}
 

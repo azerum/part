@@ -20,8 +20,8 @@ type manifest struct {
 }
 
 type fileEntry struct {
-	hash  string
-	mtime int64
+	Hash  string `json:"hash"`
+	Mtime int64  `json:"mtime"`
 }
 
 func toManifestPath(partitionDirAbsoluteOsPath string, absolutePath string) (string, error) {

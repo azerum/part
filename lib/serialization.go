@@ -135,11 +135,11 @@ func (manifest *manifest) validate() error {
 }
 
 func (entry *fileEntry) validate() error {
-	if entry.hash == "" {
+	if entry.Hash == "" {
 		return errors.New(".hash must not be empty")
 	}
 
-	if entry.mtime < 0 {
+	if entry.Mtime < 0 {
 		return errors.New(".mtime must be >= 0")
 	}
 
