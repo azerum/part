@@ -44,7 +44,7 @@ func Test_runs_map_fn_with_given_concurrency_and_closes_once_input_closes(t *tes
 		go func() {
 			out.Channel <- -x
 			out.Channel <- x
-			close(out.Channel)
+			out.CloseOk()
 		}()
 
 		return out
@@ -69,18 +69,14 @@ func Test_when_any_map_fn_fails_eventually_closes_output_and_returns_the_first_e
 		if x == 0 {
 			time.Sleep(1 * time.Second)
 
-			out.Err = errors.New("0")
-			close(out.Channel)
-
+			out.CloseWithError(errors.New("0"))
 			return out
 		}
 
 		if x == 1 {
 			time.Sleep(2 * time.Second)
 
-			out.Err = errors.New("1")
-			close(out.Channel)
-
+			out.CloseWithError(errors.New("1"))
 			return out
 		}
 

@@ -65,7 +65,7 @@ func hashCommand(partitionDir string) error {
 		return nil
 	}
 
-	changes, err := partition.Hash(context.Background())
+	changes, err := partition.Hash(context.Background()).Drain()
 
 	if err != nil {
 		return err

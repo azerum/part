@@ -52,7 +52,7 @@ func setupTestPartition(t *testing.T) *lib.Partition {
 }
 
 func hashAndSave(partition *lib.Partition) {
-	changes, err := partition.Hash(context.Background())
+	changes, err := partition.Hash(context.Background()).Drain()
 
 	if err != nil {
 		panic(err)

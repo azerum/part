@@ -5,7 +5,134 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+
+	"github.com/azerum/partition/utils"
 )
+
+func (partition *Partition) Hash(ctx context.Context) *utils.ChanWithError[ManifestChange] {
+	out := utils.NewChanWithError[ManifestChange](1)
+	go hashWorker(partition, out, ctx)
+
+	return out
+}
+
+func hashWorker(
+	partition *Partition,
+	out *utils.ChanWithError[ManifestChange],
+	ctx context.Context,
+) {
+	seenInPartition := make(map[string]struct{})
+
+	if partition.manifest == nil {
+		partition.manifest = &manifest{
+			Files: make(map[string]*fileEntry),
+		}
+	}
+
+	walk := func(absoluteOsPath string, manifestPath string, entry fs.DirEntry) error {
+		seenInPartition[manifestPath] = struct{}{}
+
+		info, err := entry.Info()
+
+		if err != nil {
+			return err
+		}
+
+		mtime := info.ModTime().Unix()
+
+		// If we have no manifest yet, everything is added
+		if partition.manifest == nil {
+			hash, err := HashFile(absoluteOsPath)
+
+			if err != nil {
+				return err
+			}
+
+			out.Channel <- FileAdded{
+				ManifestPath: manifestPath,
+				hash:         hash,
+				mtime:        mtime,
+			}
+
+			return nil
+		}
+
+		manifestEntry := partition.manifest.Files[manifestPath]
+
+		if manifestEntry == nil {
+			hash, err := HashFile(absoluteOsPath)
+
+			if err != nil {
+				return err
+			}
+
+			out.Channel <- FileAdded{
+				ManifestPath: manifestPath,
+				hash:         hash,
+				mtime:        mtime,
+			}
+
+			return nil
+		}
+
+		// If file's mtime is the same as in the manifest, assume it has
+		// not changed. Avoid hashing file until this check, as reading files
+		// is slow
+		//
+		// If mtime did change, verify if the contents has changed using hashes
+		//
+		// It is possible that mtime changed and hash didn't - we should update
+		// mtime in the manifest in such case, to avoid hashing this file
+		// next time
+
+		if manifestEntry.Mtime == mtime {
+			return nil
+		}
+
+		hash, err := HashFile(absoluteOsPath)
+
+		if err != nil {
+			return err
+		}
+
+		if hash == manifestEntry.Hash {
+			out.Channel <- SpuriousMtimeChange{
+				ManifestPath: manifestPath,
+				mtime:        mtime,
+			}
+
+			return nil
+		}
+
+		out.Channel <- FileModified{
+			ManifestPath: manifestPath,
+			hash:         hash,
+			mtime:        mtime,
+		}
+
+		return nil
+	}
+
+	err := partition.Walk(walk, ctx)
+
+	if err != nil {
+		out.CloseWithError(err)
+		return
+	}
+
+	// Files that were not seen in the partition but are in the manifest
+	// are the files that were deleted
+	for p := range partition.manifest.Files {
+		_, seen := seenInPartition[p]
+
+		if !seen {
+			out.Channel <- FileDeleted{ManifestPath: p}
+		}
+	}
+
+	out.CloseOk()
+
+}
 
 type ManifestChange interface {
 	apply(manifest *manifest) error
@@ -115,117 +242,4 @@ func (partition *Partition) ApplyChanges(changes []ManifestChange) {
 
 		panic(fullErr)
 	}
-}
-
-func (partition *Partition) Hash(ctx context.Context) ([]ManifestChange, error) {
-	changes := make([]ManifestChange, 0)
-	seenInPartition := make(map[string]struct{})
-
-	if partition.manifest == nil {
-		partition.manifest = &manifest{
-			Files: make(map[string]*fileEntry),
-		}
-	}
-
-	walk := func(absoluteOsPath string, manifestPath string, entry fs.DirEntry) error {
-		seenInPartition[manifestPath] = struct{}{}
-
-		info, err := entry.Info()
-
-		if err != nil {
-			return err
-		}
-
-		mtime := info.ModTime().Unix()
-
-		// If we have no manifest yet, everything is added
-		if partition.manifest == nil {
-			hash, err := HashFile(absoluteOsPath)
-
-			if err != nil {
-				return err
-			}
-
-			changes = append(changes, FileAdded{
-				ManifestPath: manifestPath,
-				hash:         hash,
-				mtime:        mtime,
-			})
-
-			return nil
-		}
-
-		manifestEntry := partition.manifest.Files[manifestPath]
-
-		if manifestEntry == nil {
-			hash, err := HashFile(absoluteOsPath)
-
-			if err != nil {
-				return err
-			}
-
-			changes = append(changes, FileAdded{
-				ManifestPath: manifestPath,
-				hash:         hash,
-				mtime:        mtime,
-			})
-
-			return nil
-		}
-
-		// If file's mtime is the same as in the manifest, assume it has
-		// not changed. Avoid hashing file until this check, as reading files
-		// is slow
-		//
-		// If mtime did change, verify if the contents has changed using hashes
-		//
-		// It is possible that mtime changed and hash didn't - we should update
-		// mtime in the manifest in such case, to avoid hashing this file
-		// next time
-
-		if manifestEntry.Mtime == mtime {
-			return nil
-		}
-
-		hash, err := HashFile(absoluteOsPath)
-
-		if err != nil {
-			return err
-		}
-
-		if hash == manifestEntry.Hash {
-			changes = append(changes, SpuriousMtimeChange{
-				ManifestPath: manifestPath,
-				mtime:        mtime,
-			})
-
-			return nil
-		}
-
-		changes = append(changes, FileModified{
-			ManifestPath: manifestPath,
-			hash:         hash,
-			mtime:        mtime,
-		})
-
-		return nil
-	}
-
-	err := partition.Walk(walk, ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Files that were not seen in the partition but are in the manifest
-	// are the files that were deleted
-	for p := range partition.manifest.Files {
-		_, seen := seenInPartition[p]
-
-		if !seen {
-			changes = append(changes, FileDeleted{ManifestPath: p})
-		}
-	}
-
-	return changes, nil
 }

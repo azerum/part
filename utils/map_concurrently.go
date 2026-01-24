@@ -5,18 +5,6 @@ import (
 	"sync"
 )
 
-type ChanWithError[T any] struct {
-	Channel chan T
-	Err     error
-}
-
-func NewChanWithError[T any](size int) *ChanWithError[T] {
-	return &ChanWithError[T]{
-		Channel: make(chan T, size),
-		Err:     nil,
-	}
-}
-
 type MapFn[I any, O any] func(input I) *ChanWithError[O]
 
 func MapConcurrently[I any, O any](
@@ -41,8 +29,6 @@ func Map[I any, O any](
 	out := NewChanWithError[O](0)
 
 	go func() {
-		defer close(out.Channel)
-
 		for v := range input {
 			ch := mapFn(v)
 
@@ -51,10 +37,12 @@ func Map[I any, O any](
 			}
 
 			if ch.Err != nil {
-				out.Err = ch.Err
+				out.CloseWithError(ch.Err)
 				return
 			}
 		}
+
+		out.CloseOk()
 	}()
 
 	return out
@@ -104,12 +92,13 @@ func merge[T any](channels []*ChanWithError[T]) *ChanWithError[T] {
 
 	go func() {
 		wg.Wait()
+		err := context.Cause(ctx)
 
-		if err := context.Cause(ctx); err != nil {
-			out.Err = err
+		if err != nil {
+			out.CloseWithError(err)
+		} else {
+			out.CloseOk()
 		}
-
-		close(out.Channel)
 	}()
 
 	return out

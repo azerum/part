@@ -13,7 +13,7 @@ func Test_Hash_creates_entire_manifest_when_run_for_the_first_time(t *testing.T)
 	g := NewGomegaWithT(t)
 
 	p := setupTestPartition(t)
-	changes, err := p.Hash(context.Background())
+	changes, err := p.Hash(context.Background()).Drain()
 
 	if err != nil {
 		panic(err)
@@ -61,7 +61,7 @@ func Test_Hash_detects_added_files(t *testing.T) {
 	hashAndSave(p)
 
 	addFileF(p)
-	changes, err := p.Hash(context.Background())
+	changes, err := p.Hash(context.Background()).Drain()
 
 	if err != nil {
 		panic(err)
@@ -85,7 +85,7 @@ func Test_Hash_detects_deleted_files(t *testing.T) {
 	hashAndSave(p)
 
 	removeFileBAndDirectoryC(p)
-	changes, err := p.Hash(context.Background())
+	changes, err := p.Hash(context.Background()).Drain()
 
 	if err != nil {
 		panic(err)
@@ -117,7 +117,7 @@ func Test_Hash_detects_modified_files(t *testing.T) {
 	hashAndSave(p)
 
 	modifyFileA(p)
-	changes, err := p.Hash(context.Background())
+	changes, err := p.Hash(context.Background()).Drain()
 
 	if err != nil {
 		panic(err)
@@ -145,7 +145,7 @@ func Test_Hash_if_called_right_after_changes_are_applied_and_saved_returns_no_ch
 	modifyFileA(p)
 	modifyFileEMtime(p)
 
-	changes, err := p.Hash(context.Background())
+	changes, err := p.Hash(context.Background()).Drain()
 
 	if err != nil {
 		panic(err)
@@ -157,7 +157,7 @@ func Test_Hash_if_called_right_after_changes_are_applied_and_saved_returns_no_ch
 		panic(err)
 	}
 
-	changes2, err := p.Hash(context.Background())
+	changes2, err := p.Hash(context.Background()).Drain()
 
 	if err != nil {
 		panic(err)
