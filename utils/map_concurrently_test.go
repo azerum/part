@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/azerum/partition/utils"
+	"github.com/azerum/part/utils"
 	. "github.com/onsi/gomega"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/azerum/partition/lib"
+	"github.com/azerum/part/lib"
 
 	. "github.com/onsi/gomega"
 )

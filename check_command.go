@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/azerum/partition/lib"
-	"github.com/azerum/partition/utils"
+	"github.com/azerum/part/lib"
+	"github.com/azerum/part/utils"
 )
 
 func checkCommand(partitionDirs []string) (int, error) {

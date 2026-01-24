@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/azerum/partition/lib"
+	"github.com/azerum/part/lib"
 )
 
 func setupTestPartition(t *testing.T) *lib.Partition {

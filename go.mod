@@ -1,4 +1,4 @@
-module github.com/azerum/partition
+module github.com/azerum/part
 
 go 1.25.1
 

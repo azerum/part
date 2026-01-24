@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/azerum/partition/lib"
+	"github.com/azerum/part/lib"
 	. "github.com/onsi/gomega"
 	gs "github.com/onsi/gomega/gstruct"
 )

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io/fs"
 
-	"github.com/azerum/partition/utils"
+	"github.com/azerum/part/utils"
 )
 
 func (partition *Partition) Check(ctx context.Context) *utils.ChanWithError[ManifestMismatch] {

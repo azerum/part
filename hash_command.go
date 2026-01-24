@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/azerum/partition/lib"
+	"github.com/azerum/part/lib"
 )
 
 func hashCommand(partitionDir string) error {
