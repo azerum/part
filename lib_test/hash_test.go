@@ -145,13 +145,15 @@ func Test_Hash_if_called_right_after_changes_are_applied_and_saved_returns_no_ch
 	modifyFileA(p)
 	modifyFileEMtime(p)
 
-	changes, err := p.Hash(context.Background()).Drain()
+	changes := p.Hash(context.Background())
 
-	if err != nil {
-		panic(err)
+	for c := range changes.Channel {
+		p.ApplyChange(c)
 	}
 
-	p.ApplyChanges(changes)
+	if changes.Err != nil {
+		panic(changes.Err)
+	}
 
 	if err := p.Save(); err != nil {
 		panic(err)

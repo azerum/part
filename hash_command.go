@@ -14,18 +14,19 @@ func hashCommand(partitionDir string) error {
 		return nil
 	}
 
-	changes, err := partition.Hash(context.Background()).Drain()
+	changes := partition.Hash(context.Background())
 
-	if err != nil {
-		return err
-	}
-
-	for _, change := range changes {
-		line := sprintManifestChange(change)
+	for c := range changes.Channel {
+		line := sprintManifestChange(c)
 		fmt.Println(line)
+
+		partition.ApplyChange(c)
 	}
 
-	partition.ApplyChanges(changes)
+	if changes.Err != nil {
+		return changes.Err
+	}
+
 	return partition.Save()
 }
 

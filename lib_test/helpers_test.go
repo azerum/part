@@ -52,13 +52,15 @@ func setupTestPartition(t *testing.T) *lib.Partition {
 }
 
 func hashAndSave(partition *lib.Partition) {
-	changes, err := partition.Hash(context.Background()).Drain()
+	changes := partition.Hash(context.Background())
 
-	if err != nil {
-		panic(err)
+	for c := range changes.Channel {
+		partition.ApplyChange(c)
 	}
 
-	partition.ApplyChanges(changes)
+	if changes.Err != nil {
+		panic(changes.Err)
+	}
 
 	if err := partition.Save(); err != nil {
 		panic(err)

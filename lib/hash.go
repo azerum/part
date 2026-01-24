@@ -227,19 +227,17 @@ func (c SpuriousMtimeChange) apply(manifest *manifest) error {
 // - FileModified & FileDeleted never refer to not-added file
 //
 // **panics** if invariants are violated
-func (partition *Partition) ApplyChanges(changes []ManifestChange) {
-	for index, change := range changes {
-		err := change.apply(partition.manifest)
+func (partition *Partition) ApplyChange(change ManifestChange) {
+	err := change.apply(partition.manifest)
 
-		if err == nil {
-			continue
-		}
-
-		fullErr := errors.Join(
-			fmt.Errorf("invariant violated while applying change index=%d", index),
-			err,
-		)
-
-		panic(fullErr)
+	if err == nil {
+		return
 	}
+
+	fullErr := errors.Join(
+		fmt.Errorf("invariant violated while applying the change"),
+		err,
+	)
+
+	panic(fullErr)
 }
