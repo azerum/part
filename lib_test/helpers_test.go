@@ -1,4 +1,4 @@
-package main_test
+package lib_test
 
 import (
 	"context"
