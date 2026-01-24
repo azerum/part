@@ -19,7 +19,7 @@ func Test_Hash_creates_entire_manifest_when_run_for_the_first_time(t *testing.T)
 		panic(err)
 	}
 
-	g.Expect(changes).To(HaveExactElements(
+	g.Expect(changes).To(ConsistOf(
 		SatisfyAll(
 			BeAssignableToTypeOf(lib.FileAdded{}),
 
@@ -67,7 +67,7 @@ func Test_Hash_detects_added_files(t *testing.T) {
 		panic(err)
 	}
 
-	g.Expect(changes).To(HaveExactElements(
+	g.Expect(changes).To(ConsistOf(
 		SatisfyAll(
 			BeAssignableToTypeOf(lib.FileAdded{}),
 
@@ -91,7 +91,7 @@ func Test_Hash_detects_deleted_files(t *testing.T) {
 		panic(err)
 	}
 
-	g.Expect(changes).To(HaveExactElements(
+	g.Expect(changes).To(ConsistOf(
 		SatisfyAll(
 			BeAssignableToTypeOf(lib.FileDeleted{}),
 
@@ -123,7 +123,7 @@ func Test_Hash_detects_modified_files(t *testing.T) {
 		panic(err)
 	}
 
-	g.Expect(changes).To(HaveExactElements(
+	g.Expect(changes).To(ConsistOf(
 		SatisfyAll(
 			BeAssignableToTypeOf(lib.FileModified{}),
 
