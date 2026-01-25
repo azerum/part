@@ -1,4 +1,4 @@
-package lib_test
+package partition_lib_test
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/azerum/part/lib"
+	"github.com/azerum/part/partition_lib"
 )
 
-func setupTestPartition(t *testing.T) *lib.Partition {
+func setupTestPartition(t *testing.T) *partition_lib.Partition {
 	dirPath := t.TempDir()
 
 	// Create directory
@@ -42,7 +42,7 @@ func setupTestPartition(t *testing.T) *lib.Partition {
 		panic(err)
 	}
 
-	partition, err := lib.LoadPartition(dirPath)
+	partition, err := partition_lib.LoadPartition(dirPath)
 
 	if err != nil {
 		panic(err)
@@ -51,7 +51,7 @@ func setupTestPartition(t *testing.T) *lib.Partition {
 	return partition
 }
 
-func hashAndSave(partition *lib.Partition) {
+func hashAndSave(partition *partition_lib.Partition) {
 	changes := partition.Hash(context.Background())
 
 	for c := range changes.Channel {
@@ -67,13 +67,13 @@ func hashAndSave(partition *lib.Partition) {
 	}
 }
 
-func addFileF(partition *lib.Partition) {
+func addFileF(partition *partition_lib.Partition) {
 	if err := os.WriteFile(filepath.Join(partition.AbsoluteDirOsPath, "f"), ([]byte)("F"), 0o600); err != nil {
 		panic(err)
 	}
 }
 
-func removeFileBAndDirectoryC(partition *lib.Partition) {
+func removeFileBAndDirectoryC(partition *partition_lib.Partition) {
 	if err := os.Remove(filepath.Join(partition.AbsoluteDirOsPath, "b")); err != nil {
 		panic(err)
 	}
@@ -83,7 +83,7 @@ func removeFileBAndDirectoryC(partition *lib.Partition) {
 	}
 }
 
-func modifyFileA(partition *lib.Partition) {
+func modifyFileA(partition *partition_lib.Partition) {
 	// Wait at least one second so mtime will be different even if
 	// this FS has 1s resolution
 	time.Sleep(time.Second)
@@ -93,7 +93,7 @@ func modifyFileA(partition *lib.Partition) {
 	}
 }
 
-func modifyFileEMtime(partition *lib.Partition) {
+func modifyFileEMtime(partition *partition_lib.Partition) {
 	path := filepath.Join(partition.AbsoluteDirOsPath, "e")
 	t := time.Now().Add(10 * time.Second)
 

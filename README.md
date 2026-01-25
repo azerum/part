@@ -1,4 +1,4 @@
-# hash subcommand
+# part hash
 
 ## Goal:
 

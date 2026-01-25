@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/azerum/part/lib"
+	"github.com/azerum/part/partition_lib"
 	"github.com/azerum/part/utils"
 )
 
@@ -56,7 +56,7 @@ func checkPartitionAndGetStdoutLines(
 	lines := utils.NewChanWithError[string](1)
 
 	go func() {
-		partition, err := lib.LoadPartition(partitionDir)
+		partition, err := partition_lib.LoadPartition(partitionDir)
 
 		if err != nil {
 			lines.CloseWithError(err)
@@ -80,15 +80,15 @@ func checkPartitionAndGetStdoutLines(
 	return lines
 }
 
-func sprintManifestMismatch(partitionDir string, mismatch lib.ManifestMismatch) string {
+func sprintManifestMismatch(partitionDir string, mismatch partition_lib.ManifestMismatch) string {
 	switch c := mismatch.(type) {
-	case lib.FileNotHashed:
+	case partition_lib.FileNotHashed:
 		return fmt.Sprintf("?+ %s %s", partitionDir, c.ManifestPath)
 
-	case lib.FileMissing:
+	case partition_lib.FileMissing:
 		return fmt.Sprintf("?- %s %s", partitionDir, c.ManifestPath)
 
-	case lib.HashDoesNotMatch:
+	case partition_lib.HashDoesNotMatch:
 		return fmt.Sprintf("?* %s %s actual=%s expected=%s", partitionDir, c.ManifestPath, c.ActualHash, c.ExpectedHash)
 
 	default:

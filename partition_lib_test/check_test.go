@@ -1,10 +1,10 @@
-package lib_test
+package partition_lib_test
 
 import (
 	"context"
 	"testing"
 
-	"github.com/azerum/part/lib"
+	"github.com/azerum/part/partition_lib"
 	. "github.com/onsi/gomega"
 	gs "github.com/onsi/gomega/gstruct"
 )
@@ -24,7 +24,7 @@ func Test_Check_detects_added_but_not_hashed_files(t *testing.T) {
 
 	g.Expect(mismatches).To(ConsistOf(
 		SatisfyAll(
-			BeAssignableToTypeOf(lib.FileNotHashed{}),
+			BeAssignableToTypeOf(partition_lib.FileNotHashed{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
 				"ManifestPath": Equal("f"),
@@ -48,7 +48,7 @@ func Test_Check_detects_missing_files(t *testing.T) {
 
 	g.Expect(mismatches).To(ConsistOf(
 		SatisfyAll(
-			BeAssignableToTypeOf(lib.FileMissing{}),
+			BeAssignableToTypeOf(partition_lib.FileMissing{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
 				"ManifestPath": Equal("b"),
@@ -56,7 +56,7 @@ func Test_Check_detects_missing_files(t *testing.T) {
 		),
 
 		SatisfyAll(
-			BeAssignableToTypeOf(lib.FileMissing{}),
+			BeAssignableToTypeOf(partition_lib.FileMissing{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
 				"ManifestPath": Equal("c/d"),
@@ -80,7 +80,7 @@ func Test_Check_detects_when_file_contents_change_after_hashing(t *testing.T) {
 
 	g.Expect(mismatches).To(ConsistOf(
 		SatisfyAll(
-			BeAssignableToTypeOf(lib.HashDoesNotMatch{}),
+			BeAssignableToTypeOf(partition_lib.HashDoesNotMatch{}),
 
 			gs.MatchFields(gs.IgnoreExtras, gs.Fields{
 				"ManifestPath": Equal("a"),

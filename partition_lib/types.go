@@ -1,4 +1,4 @@
-package lib
+package partition_lib
 
 import "path/filepath"
 

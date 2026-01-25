@@ -1,11 +1,10 @@
-package lib_test
+package partition_lib_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/azerum/part/lib"
-
+	"github.com/azerum/part/partition_lib"
 	. "github.com/onsi/gomega"
 )
 
@@ -13,7 +12,7 @@ func Test_LoadPartition_returns_partition_without_manifest_if_directory_does_not
 	g := NewGomegaWithT(t)
 
 	dirPath := t.TempDir()
-	p, err := lib.LoadPartition(dirPath)
+	p, err := partition_lib.LoadPartition(dirPath)
 
 	g.Expect(err).To(BeNil())
 	g.Expect(p).ToNot(BeNil())
@@ -25,7 +24,7 @@ func Test_LoadPartition_returns_error_if_manifest_file_is_malformed(t *testing.T
 	// Here, .dataJson missing is missing
 	manifestJson := `{"dataHash": "abc"}`
 
-	_, err := lib.DeserializePartition("dir", []byte(manifestJson))
+	_, err := partition_lib.DeserializePartition("dir", []byte(manifestJson))
 	g.Expect(err).To(MatchError(ContainSubstring("while loading serialized manifest")))
 }
 
@@ -39,9 +38,9 @@ func Test_LoadPartition_returns_error_if_manifest_hash_does_not_match_the_conten
 		"dataJson": "{}"
 	}`
 
-	actualHash := lib.HashString(dataJson)
+	actualHash := partition_lib.HashString(dataJson)
 
-	_, err := lib.DeserializePartition("dir", []byte(manifestJson))
+	_, err := partition_lib.DeserializePartition("dir", []byte(manifestJson))
 
 	g.Expect(err).To(MatchError(SatisfyAll(
 		ContainSubstring("manifest hash mismatch"),
@@ -60,14 +59,14 @@ func Test_LoadPartition_returns_error_if_manifest_is_malformed(t *testing.T) {
 	// Here, the file entry is missing .hash
 
 	dataJson := `{"files":{"path/to/file.txt":{"mtime":42}}}`
-	dataHash := lib.HashString(dataJson)
+	dataHash := partition_lib.HashString(dataJson)
 
 	manifestJson := fmt.Sprintf(`{
 		"dataHash": "%s",
 		"dataJson": "{\"files\":{\"path/to/file.txt\":{\"mtime\":42}}}"
 	}`, dataHash)
 
-	_, err := lib.DeserializePartition("dir", []byte(manifestJson))
+	_, err := partition_lib.DeserializePartition("dir", []byte(manifestJson))
 
 	g.Expect(err).To(MatchError(SatisfyAll(
 		// Should mention that the error is in the .dataJson, not the outer
