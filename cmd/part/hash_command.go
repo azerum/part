@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/azerum/data-storage-suite/partition_lib"
+	"github.com/azerum/data-storage-suite/pkg/partition_lib"
 )
 
 func hashCommand(partitionDir string) error {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/azerum/data-storage-suite/utils"
+	"github.com/azerum/data-storage-suite/pkg/utils"
 	. "github.com/onsi/gomega"
 )
 

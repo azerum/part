@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/azerum/data-storage-suite/partition_lib"
+	"github.com/azerum/data-storage-suite/pkg/partition_lib"
 	. "github.com/onsi/gomega"
 )
 
