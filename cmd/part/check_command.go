@@ -10,12 +10,14 @@ import (
 )
 
 func checkCommand(partitionDirs []string) (int, error) {
-	input := fanOutPartitionDirs(partitionDirs)
+	concurrency := runtime.NumCPU()
+
+	input := fanOutPartitionDirs(partitionDirs, concurrency)
 
 	lines := utils.MapConcurrently(
 		input,
 		checkPartitionAndGetStdoutLines,
-		runtime.NumCPU(),
+		concurrency,
 	)
 
 	hadAtLeastOneMismatch := false
@@ -36,8 +38,8 @@ func checkCommand(partitionDirs []string) (int, error) {
 	return 0, nil
 }
 
-func fanOutPartitionDirs(partitionDirs []string) <-chan string {
-	out := make(chan string)
+func fanOutPartitionDirs(partitionDirs []string, bufferSize int) <-chan string {
+	out := make(chan string, bufferSize)
 
 	go func() {
 		for _, dir := range partitionDirs {
