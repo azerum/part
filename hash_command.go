@@ -16,15 +16,26 @@ func hashCommand(partitionDir string) error {
 
 	changes := partition.Hash(context.Background())
 
+	// Do not apply changes immediately, as Hash() reads from partition.manifest.Files,
+	// and concurrent read+write is not safe
+	//
+	// TODO: use sync.Map? Concurrent parts of code never act on the same map
+	// key
+	changesList := make([]lib.ManifestChange, 0)
+
 	for c := range changes.Channel {
 		line := sprintManifestChange(c)
 		fmt.Println(line)
 
-		partition.ApplyChange(c)
+		changesList = append(changesList, c)
 	}
 
 	if changes.Err != nil {
 		return changes.Err
+	}
+
+	for _, c := range changesList {
+		partition.ApplyChange(c)
 	}
 
 	return partition.Save()
