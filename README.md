@@ -1,3 +1,7 @@
+# normalize-photo-file-names
+
+Name is intentionally long, as renaming files accidentally can be annoying 
+
 # part hash
 
 ## Goal:
