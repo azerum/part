@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/azerum/part/utils"
+	"github.com/azerum/data-storage-suite/utils"
 )
 
 func (partition *Partition) Hash(ctx context.Context) *utils.ChanWithError[ManifestChange] {

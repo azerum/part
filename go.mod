@@ -1,4 +1,4 @@
-module github.com/azerum/part
+module github.com/azerum/data-storage-suite
 
 go 1.25.1
 
