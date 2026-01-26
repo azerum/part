@@ -9,10 +9,17 @@ import (
 type WalkPartitionCallback func(absoluteOsPath string, manifestPath string, entry fs.DirEntry) error
 
 func (partition *Partition) Walk(callback WalkPartitionCallback, ctx context.Context) error {
-	pathsToIgnore := make(map[string]struct{})
+	topLevelManifestPath := filepath.Join(partition.AbsoluteDirOsPath, manifestFileName)
+	topLevelTmpManifestPath := filepath.Join(partition.AbsoluteDirOsPath, manifestTmpFileName)
 
-	pathsToIgnore[filepath.Join(partition.AbsoluteDirOsPath, manifestFileName)] = struct{}{}
-	pathsToIgnore[filepath.Join(partition.AbsoluteDirOsPath, manifestTmpFileName)] = struct{}{}
+	shouldIgnore := func(path string) bool {
+		if path == topLevelManifestPath || path == topLevelTmpManifestPath {
+			return true
+		}
+
+		fileName := filepath.Base(path)
+		return fileName == ".DS_Store"
+	}
 
 	return filepath.WalkDir(partition.AbsoluteDirOsPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -27,7 +34,7 @@ func (partition *Partition) Walk(callback WalkPartitionCallback, ctx context.Con
 			return nil
 		}
 
-		if _, exists := pathsToIgnore[path]; exists {
+		if shouldIgnore(path) {
 			return nil
 		}
 
