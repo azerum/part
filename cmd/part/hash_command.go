@@ -24,10 +24,13 @@ func hashCommand(partitionDir string) error {
 	changesList := make([]partition_lib.ManifestChange, 0)
 
 	for c := range changes.Channel {
-		line := sprintManifestChange(c)
-		fmt.Println(line)
-
 		changesList = append(changesList, c)
+
+		line := sprintManifestChange(c)
+
+		if line != "" {
+			fmt.Println(line)
+		}
 	}
 
 	if changes.Err != nil {
@@ -51,6 +54,9 @@ func sprintManifestChange(change partition_lib.ManifestChange) string {
 
 	case partition_lib.FileDeleted:
 		return fmt.Sprintf("- %s", c.ManifestPath)
+
+	case partition_lib.SpuriousMtimeChange:
+		return ""
 
 	default:
 		panic(fmt.Sprintf("Unknown ManifestChange: %+v", change))
