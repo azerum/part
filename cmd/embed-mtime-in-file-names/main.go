@@ -64,11 +64,11 @@ func calculateRenames(filePath string) *utils.ChanWithError[fileRename] {
 		}
 
 		modTime := info.ModTime().UTC().Format("2006-01-02T15-04-05Z")
-		_, extension := splitFileNameAndExtension(filePath)
+		originalName, extension := splitFileNameAndExtension(filePath)
 
 		newPath := filepath.Join(
 			filepath.Dir(filePath),
-			fmt.Sprintf("%s.%s", modTime, extension),
+			fmt.Sprintf("%s-%s.%s", modTime, originalName, extension),
 		)
 
 		out.Channel <- fileRename{
@@ -83,15 +83,6 @@ func calculateRenames(filePath string) *utils.ChanWithError[fileRename] {
 }
 
 func splitFileNameAndExtension(filePath string) (string, string) {
-	parts := strings.SplitAfterN(filePath, ".", 2)
-
-	if len(parts) < 1 {
-		panic(fmt.Sprintf("SplitAfterN() returned 0 strings. File path: %s", filePath))
-	}
-
-	if len(parts) == 1 {
-		return parts[0], ""
-	}
-
-	return parts[0], parts[1]
+	fileName, extension, _ := strings.Cut(filePath, ".")
+	return fileName, extension
 }
