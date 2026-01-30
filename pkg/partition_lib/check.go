@@ -2,7 +2,7 @@ package partition_lib
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"io/fs"
 
 	"github.com/azerum/data-storage-suite/pkg/utils"
@@ -21,7 +21,10 @@ func checkWorker(
 	ctx context.Context,
 ) {
 	if partition.manifest == nil {
-		out.CloseWithError(errors.New("partition has no manifest"))
+		out.CloseWithError(
+			fmt.Errorf("partition %s has no manifest", partition.AbsoluteDirOsPath),
+		)
+
 		return
 	}
 
