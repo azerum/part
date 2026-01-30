@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-const manifestFileName = "_manifest.json"
+const manifestFileName = ".manifest.json"
 const manifestTmpFileName = manifestFileName + ".tmp"
 
 func LoadPartition(dirPath string) (*Partition, error) {
