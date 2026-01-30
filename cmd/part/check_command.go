@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"runtime"
 
 	"github.com/azerum/data-storage-suite/pkg/partition_lib"
@@ -58,6 +59,18 @@ func checkPartitionAndGetStdoutLines(
 	lines := utils.NewChanWithError[string](1)
 
 	go func() {
+		info, err := os.Stat(partitionDir)
+
+		if err != nil {
+			lines.CloseWithError(err)
+			return
+		}
+
+		if !info.IsDir() {
+			lines.CloseOk()
+			return
+		}
+
 		partition, err := partition_lib.LoadPartition(partitionDir)
 
 		if err != nil {
