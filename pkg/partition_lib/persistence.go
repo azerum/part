@@ -45,6 +45,17 @@ func (partition *Partition) Save() error {
 
 // All paths must be absolute
 //
+// Given assumptions:
+//
+// A1.  For rename(A, B), if both A and B exist, it is guaranteed that at any
+// point of time, either B has complete, uncorrupted contents it had
+// before rename(), or it has complete, uncorrupted contents A had
+//
+// A2.  After fsync(f); close(f) succeed, all writes done by this process to f after
+// last fsync() (or  after opening f if there was no fsync()) are persisted, durably
+//
+// A3. A2 applies persisting directories info when we rename files inside
+//
 // Guarantees two properties:
 //
 // P1:
@@ -55,34 +66,30 @@ func (partition *Partition) Save() error {
 //
 // P2:
 //
-// Once it returns, `filePath surely contains complete, uncorrupted `data`,
+// Once it returns, `filePath` surely contains complete, uncorrupted `data`,
 // persisted on disk
-//
-// The properties hold if anything other than the disk (this program, OS, computer)
-// crashes
-//
-// TODO: check if this works for Windows!!!
 func overwrite(filePath string, tmpPath string, data []byte) error {
-	// General idea:
+	// Proof of P1:
 	//
-	// To achieve P1: write to temporary file, then rename it to the original
-	// file (replacing the original file)
+	// We first write to tmpPath, then rename(tmpPath, filePath). This can
+	// result in filePath being corrupted only if:
 	//
-	// This relies on sub-property SP1:
+	// 1. We did rename() before tmpPath was fully written
+	// 2. rename() may leave filePath corrupted even if tmpPath is not
 	//
-	// For rename(A, B), if both A and B exist, it is guaranteed that at any
-	// point of time, either B has complete, uncorrupted contents it had
-	// before rename(), or it has complete, uncorrupted contents A had
+	// For 1: we do fsync(); close() on tmpPath - prevented by A2
+	// For 2: prevented by A1
+
+	// Proof of P2:
 	//
-	// To achieve P2: fsync() and close() all files we write to, fsync()
-	// and close() directory(-ies) where rename() takes place
+	// We may return without error even though filePath is not completely
+	// written if:
 	//
-	// This relies on sub-properties SP2 and SP3:
+	// 1. We proceed before tmpPath is complete (prevented by A2, se above)
+	// 2. We proceed before effect rename() is persisted
 	//
-	// SP2: After fsync(f); close(f) succeed, all writes done to f before that
-	// are persisted on durable disk
-	//
-	// SP3: SP2 applies to directories when we rename files inside
+	// For 1: prevented by A2, see above
+	// For 2: we do fsync(); close() on the directory - prevented by A3
 
 	tmpFile, err := os.Create(tmpPath)
 
