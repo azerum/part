@@ -9,16 +9,11 @@ import (
 type WalkPartitionCallback func(absoluteOsPath string, manifestPath string, entry fs.DirEntry) error
 
 func (partition *Partition) Walk(callback WalkPartitionCallback, ctx context.Context) error {
-	topLevelManifestPath := filepath.Join(partition.AbsoluteDirOsPath, manifestFileName)
-	topLevelTmpManifestPath := filepath.Join(partition.AbsoluteDirOsPath, manifestTmpFileName)
-
 	shouldIgnore := func(path string) bool {
-		if path == topLevelManifestPath || path == topLevelTmpManifestPath {
-			return true
-		}
-
 		fileName := filepath.Base(path)
-		return fileName == ".DS_Store"
+
+		_, exists := fileNamesToIgnore[fileName]
+		return exists
 	}
 
 	return filepath.WalkDir(partition.AbsoluteDirOsPath, func(path string, d fs.DirEntry, err error) error {
@@ -50,4 +45,33 @@ func (partition *Partition) Walk(callback WalkPartitionCallback, ctx context.Con
 
 		return nil
 	})
+}
+
+var fileNamesToIgnore = map[string]struct{}{
+	manifestFileName:    {},
+	manifestTmpFileName: {},
+
+	// macOS
+	// Source: https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
+	//
+	// Tweaks: removed `._*` and `Icon` as they seem way too generic (may affect
+	// non-OS-specific files)
+
+	".DS_Store":                           {},
+	"._.DS_Store":                         {},
+	"__MACOSX/":                           {},
+	".AppleDouble":                        {},
+	".LSOverride":                         {},
+	".DocumentRevisions-V100":             {},
+	".fseventsd":                          {},
+	".Spotlight-V100":                     {},
+	".TemporaryItems":                     {},
+	".Trashes":                            {},
+	".VolumeIcon.icns":                    {},
+	".com.apple.timemachine.donotpresent": {},
+	".AppleDB":                            {},
+	".AppleDesktop":                       {},
+	"Network Trash Folder":                {},
+	"Temporary Items":                     {},
+	".apdisk":                             {},
 }
